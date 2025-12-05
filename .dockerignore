@@ -1,0 +1,14 @@
+*.pyc
+__pycache__/
+
+.vscode/
+*.code-workspace
+
+github-cpu-ocr/
+
+data/
+
+.git
+.gitignore
+
+*.log

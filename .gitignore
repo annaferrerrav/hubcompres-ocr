@@ -1,0 +1,10 @@
+*.pyc
+__pycache__/
+
+.vscode/
+
+github-cpu-ocr/
+
+pdf_docs/
+app/data/pdf_docs/
+
