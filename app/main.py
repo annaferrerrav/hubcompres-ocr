@@ -32,7 +32,7 @@ def parse_args():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_BASE = os.path.join(BASE_DIR, "data")
 
-    default_csv      = os.path.join(DATA_BASE, "input_csv", "muestra_30_expedients.csv")
+    default_csv      = os.path.join(DATA_BASE, "input_csv", "expedients_cpu.csv")
     default_read_pdf = os.path.join(DATA_BASE, "pdf_docs")
     default_save_txt = os.path.join(DATA_BASE, "txt_results")
     default_progress = os.path.join(DATA_BASE, "progress.csv")
@@ -40,7 +40,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Processador d'expedients amb OCR i threading.")
     
     parser.add_argument("--csv-path", default=default_csv,
-                        help="Ruta al CSV amb la columna 'expedient'. (DEFAULT: data/input_csv/muestra_30_expedients.csv)")
+                        help="Ruta al CSV amb la columna 'expedient'. (DEFAULT: data/input_csv/expedients_cpu.csv)")
     parser.add_argument("--read-pdfs", default=default_read_pdf,
                         help="Carpeta amb els PDFs dels expedients.")
     parser.add_argument("--save-txt", default=default_save_txt,
@@ -52,9 +52,9 @@ def parse_args():
                         help="Si cal fer OCR ('yes' o 'no').")
     parser.add_argument("--max-workers", type=int, default=5,
                         help="Nombre màxim de threads en paral·lel.")
-    parser.add_argument("--max-hours", type=float, default=0.02,
+    parser.add_argument("--max-hours", type=float, default=7.0,
                         help="Hores màximes per sessió.")
-    parser.add_argument("--cooldown-minutes", type=float, default=2.0,
+    parser.add_argument("--cooldown-minutes", type=float, default=30.0,
                         help="Minuts de pausa entre sessions.")
 
     return parser.parse_args()

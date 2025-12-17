@@ -68,7 +68,7 @@ inesperats.
   ------------------------------------------------------------------------------
   Argument               Descripció            Valor per defecte
   ---------------------- --------------------- ---------------------------------
-  `--csv-path`           CSV amb columna       `data/input_csv/expedients.csv`
+  `--csv-path`           CSV amb columna       `data/input_csv/expedients_cpu.csv`
                          `expedient`           
 
   `--read-pdfs`          Carpeta amb PDFs      `data/pdf_docs/`

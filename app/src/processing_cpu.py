@@ -13,25 +13,6 @@ from src import read_files_text_images_cpu
 #--------------------------------------------------------------------------
 # Variables de configuracion de sistema
 #--------------------------------------------------------------------------
-#borrar
-'''
-DATA_BASE = r"./data"
-
-path_read_files = os.path.join(DATA_BASE, "pdf_docs")
-path_save_txt   = os.path.join(DATA_BASE, "txt_results")
-
-csv_path = os.path.join(DATA_BASE, "input_csv", "expedients.csv")
-progress_path = "progress.csv"
-
-#Variables paralelizacion
-USE_OCR = False
-OCR_MODEL = None
-WORKERS = 5
-COOLDOWN = 30
-WORK_TIME = 7
-'''
-#---------------------------------------------------------------------------
-
 
 def init_worker(ocr_enabled: bool, lang: str = "es", use_angle_cls: bool = True):
     """
@@ -183,7 +164,7 @@ def carregar_expedients_pendents(data_df, progress_path):
     i, aquells que ja hi siguin, els treu de data_df per tant no els torna a fer.
     """
     if os.path.exists(progress_path):
-        progress_df = pd.read_csv(progress_path)
+        progress_df = pd.read_csv(progress_path, sep=";")
         done = set(progress_df["expedient"])
         return data_df[~data_df["expedient"].isin(done)]
     return data_df.copy()
@@ -200,91 +181,12 @@ def append_result(result, progress_path):
         writer = csv.DictWriter(
             f,
             fieldnames=["expedient", "status", "time", "documents", "pages"],
+            delimiter=";",
         )
         if not file_exists:
             writer.writeheader()
         writer.writerow(result)
 
-'''
-def processar_timeboxed(
-    data_df,
-    path_read_files,
-    path_save_txt,
-    ocr,
-    progress_path,
-    max_workers,
-    max_runtime_hours,
-):
-    """
-    - Processa data_df amb multiprocessing.Pool (processos, no threads).
-    - Deixa de llençar nous expedients quan max_runtime_hours s'ha superat,
-      però deixa que acabin els que ja estaven en curs.
-    - Afegeix les dades retornades al progress.csv.
-    """
-    start = time.time()
-    max_runtime = max_runtime_hours * 3600
-
-    results = []
-    pending = list(data_df.iterrows())
-    ocr_enabled = (ocr == "yes")
-
-    # Converteix row (Series) a dict per facilitar pickling
-    row_dicts = [(int(idx), row.to_dict()) for idx, row in pending]
-
-    with Pool(
-        processes=max_workers,
-        initializer=init_worker,
-        initargs=(ocr_enabled,),
-    ) as pool:
-        async_results = []
-        iterator = iter(row_dicts)
-        encolats = 0  # Comptador d'expedients encolats
-
-        MAX_ENCOLATS = 5
-
-        while True:
-            elapsed = time.time() - start
-            if elapsed > max_runtime:
-                print("🏁 Temps màxim assolit. Parant d'enviar nous expedients.")
-                break
-
-             # Si queden menys de MAX_ENCOLATS encolats, encola un nou expedient
-            if len(async_results) < MAX_ENCOLATS:
-                try:
-                    idx, row_dict = next(iterator)
-                except StopIteration:
-                    print("🎉 Tots els expedients pendents d'aquesta sessió han estat encolats al pool!")
-                    break
-                ar = pool.apply_async(
-                    processar_expedient,
-                    args=(row_dict, path_read_files, path_save_txt),
-                )
-                async_results.append(ar)
-                encolats += 1
-            else:
-                # Si ja hi ha MAX_ENCOLATS, espera que s'alliberi algun worker
-                time.sleep(0.1)
-            # Processar resultats ja acabats per no acumular-los en memòria
-            done_to_remove = []
-            for ar_i in async_results:
-                if ar_i.ready():
-                    res = ar_i.get()
-                    append_result(res, progress_path)
-                    results.append(res)
-                    done_to_remove.append(ar_i)
-
-            # Esborrem els que ja hem processat
-            if done_to_remove: #crec que similar a pending!!!!
-                async_results = [x for x in async_results if x not in done_to_remove]
-
-        # Esperar i processar tot el que queda pendent
-        for ar in async_results:
-            res = ar.get()
-            append_result(res, progress_path)
-            results.append(res)
-
-    return results
-'''
 def processar_timeboxed(
     data_df,
     path_read_files,
@@ -420,29 +322,3 @@ def bucle_autorestart(
         time.sleep(cooldown_minutes * 60)
 
     print("🏆 Procés completat. No queda res a fer.")
-
-'''
-if __name__ == "__main__":
-    # Configurar logging en consola
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-
-    # 1) Cargar el CSV de expedientes
-    print("Leyendo CSV de expedients...")
-    data_df = pd.read_csv(csv_path)  # ajusta sep=";" si hace falta
-    print(f"Se han cargado {len(data_df)} expedients")
-
-    # 2) Lanzar el bucle principal
-    bucle_autorestart(
-        data_df=data_df,
-        path_read_files=path_read_files,
-        path_save_txt=path_save_txt,
-        ocr="no",  # o "yes" si quieres OCR
-        progress_path=progress_path,
-        max_workers=WORKERS,
-        max_hours=WORK_TIME,
-        cooldown_minutes=COOLDOWN,
-    )
-'''
